@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roughly · Interactive prototype</title>
+<meta name="description" content="Roughly — low-effort food + routine tracking. Three clickable journeys: Alex, Sam and Jordan.">
+<style>
+  :root {
+    --navy: #1F2A44;
+    --slate: #56607A;
+    --cobalt: #2E5BDA;
+    --cobalt-50: #EEF3FF;
+    --cream: #FFF9EC;
+    --line: #EFE6D2;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--navy);
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; flex-direction: column; gap: 2px; min-width: 160px; }
+  .brand strong { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+  .brand span { font-size: 13px; color: var(--slate); }
+  .switch {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--cream);
+    border-radius: 999px;
+  }
+  .switch button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--navy);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .switch button[aria-selected="true"] { background: var(--cobalt); color: var(--white); }
+  .switch button:focus-visible, .actions a:focus-visible, .actions button:focus-visible {
+    outline: 2px solid var(--cobalt); outline-offset: 2px;
+  }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button, .actions a {
+    appearance: none;
+    border: 0;
+    background: var(--cobalt-50);
+    color: var(--cobalt);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 24px 24px;
+  }
+  .story {
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .story h1 { font-size: 17px; font-weight: 600; margin: 0; }
+  .story p { font-size: 15px; color: var(--slate); margin: 0; }
+  .stage {
+    flex: 1;
+    min-height: 480px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--cream);
+  }
+  iframe { width: 100%; height: 100%; border: 0; display: block; }
+  @media (max-width: 640px) {
+    header { padding: 12px 16px; }
+    main { padding: 12px 16px 16px; }
+    .switch { width: 100%; }
+    .switch button { flex: 1; padding: 0 8px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <strong>Roughly · Interactive prototype</strong>
+    <span>GRDS323 · Part 4 · Jamie Zhou</span>
+  </div>
+  <div class="switch" role="tablist" aria-label="Choose a person">
+    <button role="tab" data-person="alex" aria-selected="true">Alex</button>
+    <button role="tab" data-person="sam" aria-selected="false">Sam</button>
+    <button role="tab" data-person="jordan" aria-selected="false">Jordan</button>
+  </div>
+  <div class="actions">
+    <button id="restart" type="button">Restart</button>
+    <a id="open" href="#" target="_blank" rel="noopener">Open in Figma</a>
+  </div>
+</header>
+<main>
+  <section class="story" aria-live="polite">
+    <h1 id="title"></h1>
+    <p id="blurb"></p>
+  </section>
+  <div class="stage">
+    <iframe id="proto" title="Roughly prototype" allowfullscreen></iframe>
+  </div>
+</main>
+<script>
+  const FILE = 'tTyNUZIMWo7Iwmslau64RO';
+  const PAGE = '554:5788';
+  const PEOPLE = {
+    alex:   { node: '554:5790', title: 'Alex · Eating out, cooking, weekly review',
+              blurb: 'A photo can’t show portions. One photo and one sentence become an honest range, then one small action.' },
+    sam:    { node: '554:6002', title: 'Sam · Starting again',
+              blurb: 'After a gap, catching up feels too big. Missed days stay empty and one tap saves the usual.' },
+    jordan: { node: '554:6050', title: 'Jordan · Wristband + one action',
+              blurb: 'Workouts and food live apart. The wristband adds activity to the same weekly review (sample data).' }
+  };
+  const params = (node) => new URLSearchParams({
+    'page-id': PAGE, 'node-id': node.replace(':', '-'), 'starting-point-node-id': node,
+    'scaling': 'scale-down', 'content-scaling': 'fixed'
+  }).toString();
+  const embedUrl = (node) => `https://embed.figma.com/proto/${FILE}/Roughly?${params(node)}&hide-ui=1&embed-host=share`;
+  const figmaUrl = (node) => `https://www.figma.com/proto/${FILE}/Roughly?${params(node)}`;
+
+  const frame = document.getElementById('proto');
+  const tabs = [...document.querySelectorAll('[data-person]')];
+  let current = 'alex';
+
+  function show(person, push) {
+    if (!PEOPLE[person]) person = 'alex';
+    current = person;
+    const p = PEOPLE[person];
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.person === person)));
+    document.getElementById('title').textContent = p.title;
+    document.getElementById('blurb').textContent = p.blurb;
+    document.getElementById('open').href = figmaUrl(p.node);
+    frame.src = embedUrl(p.node);
+    if (push) history.replaceState(null, '', '#' + person);
+  }
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.person, true)));
+  document.getElementById('restart').addEventListener('click', () => show(current, false));
+  window.addEventListener('hashchange', () => show(location.hash.slice(1), false));
+  show(location.hash.slice(1) || 'alex', false);
+</script>
+</body>
+</html>
